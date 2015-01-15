@@ -1,3 +1,5 @@
+Dir[File.join(Dir.pwd, 'tasks', '*.rake')].each { |f| load f }
+
 require 'bundler/gem_tasks'
 require 'open-uri'
 require 'fileutils'
