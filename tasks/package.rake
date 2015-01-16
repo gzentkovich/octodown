@@ -43,6 +43,7 @@ class Package
     post_cleanup
 
     create_tarball unless ENV['DIR_ONLY']
+    upload_to_s3 unless ENV['DIR_ONLY']
   end
 
   private
@@ -78,7 +79,7 @@ class Package
     system(
       "tar -xzf packaging/traveling-ruby-#{RB_VERSION}-#{arch}.tar.gz " \
       "-C #{dir}/lib/ruby " \
-      '> /dev/null'
+      '&> /dev/null'
     )
   end
 
@@ -108,7 +109,7 @@ class Package
         system(
           'BUNDLE_IGNORE_CONFIG=1 bundle install ' \
           '--path vendor --without development --jobs 2 ' \
-          ' > /dev/null'
+          '&> /dev/null'
         )
       end
     end
@@ -119,7 +120,8 @@ class Package
 
     FileUtils.cd "#{dir}/lib/app" do
       curl "https://github.com/ianks/octodown/archive/#{tar}"
-      system "tar --strip-components=1 -xzf #{tar} > /dev/null"
+      system "tar --strip-components=1 -xzf #{tar} " \
+        '&> /dev/null'
       FileUtils.rm tar if File.exist? tar
     end
   end
