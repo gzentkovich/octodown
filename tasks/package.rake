@@ -3,11 +3,31 @@ require 'fileutils'
 
 module PackageHelpers
   def curl(file)
-    system "curl -L -O --fail --silent #{file} > /dev/null"
+    system "curl -L -O --fail --silent #{file}"
   end
 
   def print_to_console(msg)
     puts "[#{arch}]:" + ' ' * (16 - arch.size) + '=>' + ' ' + msg
+  end
+
+  def extract_cloudfront_url
+    `s3cmd cfinfo s3://octodown`.match '[a-zA-Z0-9]*.cloudfront.net ' \
+      '2> /dev/null'
+  end
+
+  def upload_to_s3
+    print_to_console 'Uploading to S3...'
+    filename = "#{dir}.tar.gz"
+
+    FileUtils.cd 'distro' do
+      system "s3cmd put -f #{filename} s3://octodown/releases/#{filename} " \
+        '&> /dev/null'
+      system 's3cmd setacl s3://octodown --acl-public --recursive ' \
+        '&> /dev/null'
+
+      url = "http://#{extract_cloudfront_url}/releases/#{filename}"
+      puts '', "Uploaded to: #{url}"
+    end
   end
 end
 
